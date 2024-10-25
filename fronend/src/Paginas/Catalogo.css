@@ -1,142 +1,215 @@
-/* Estilo para la barra de navegación */
-.navbar {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 20px;
-    background-color: #f8f9fa;
-    margin-bottom: 20px;
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
   }
   
-  .login-form input {
-    margin: 0 5px;
-    padding: 10px;
+  h2 {
+    color: #b22222;
+    text-align: center;
+    margin-top: 20px;
   }
   
-  .login-form button {
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-  }
-  
-  .btn-login, .btn-logout {
-    padding: 10px 15px;
-    font-size: 16px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .btn-login:hover, .btn-logout:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Estilo del catálogo de productos */
   .productos-container {
+    display: flex;
+    justify-content: center;
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
   }
   
   .productos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
   }
   
   .producto-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 15px;
     background-color: #fff;
-    transition: box-shadow 0.2s ease;
-    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     overflow: hidden;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .producto-card:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .producto-imagen {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
+    height: auto;
   }
   
   .producto-detalles {
-    margin-top: 10px;
-    flex-grow: 1;
+    padding: 15px;
+    text-align: center;
   }
   
   .producto-titulo {
-    font-size: 18px;
+    color: #b22222;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+  
+  .producto-precio {
+    color: #b22222;
     font-weight: bold;
     margin-bottom: 5px;
   }
   
-  .producto-precio {
-    font-size: 18px;
-    color: #e74c3c;
-    font-weight: bold;
+  .producto-metros,
+  .producto-descripcion {
+    color: #666;
+    margin-bottom: 10px;
   }
   
   .producto-acciones {
-    margin-top: 10px;
-  }
-  
-  .btn-editar, .btn-eliminar {
-    padding: 10px;
-    font-size: 14px;
-    margin-right: 5px;
-    border: none;
-    cursor: pointer;
+    display: flex;
+    justify-content: space-around;
   }
   
   .btn-editar {
-    background-color: #28a745;
+    background-color: #228b22;
     color: white;
-    border-radius: 5px;
-  }
-  
-  .btn-eliminar {
-    background-color: #dc3545;
-    color: white;
-    border-radius: 5px;
-  }
-  
-  .crear-producto, .editar-producto {
-    margin: 20px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .crear-producto input, .editar-producto input {
-    margin: 10px 0;
-    padding: 10px;
-    width: 100%;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
-  .crear-producto button, .editar-producto button {
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: #fff;
+    padding: 8px 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
   }
   
-  .crear-producto button:hover, .editar-producto button:hover {
-    background-color: #0056b3;
+  .btn-editar:hover {
+    background-color: #1e7c1e;
+  }
+  
+  .btn-eliminar {
+    background-color: #b22222;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-eliminar:hover {
+    background-color: #a02020;
+  }
+  
+  /* Estilos del login */
+  .navbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    background-color: #b22222;
+  }
+  
+  .navbar form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  input[type="text"],
+  input[type="password"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .btn-login {
+    background-color: #228b22;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-login:hover {
+    background-color: #1e7c1e;
+  }
+  
+  .btn-logout {
+    background-color: #b22222;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-logout:hover {
+    background-color: #a02020;
+  }
+  
+  .error {
+    color: red;
+    font-size: 0.9em;
+  }
+  
+  /* Formulario para crear producto */
+  .crear-producto {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    max-width: 500px;
+    margin: 20px auto;
+  }
+  
+  .crear-producto form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .crear-producto input[type="text"],
+  .crear-producto input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .crear-producto button {
+    background-color: #b22222;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .crear-producto button:hover {
+    background-color: #a02020;
+  }
+  
+  /* Historial */
+  .historial-container {
+    margin: 20px auto;
+    max-width: 800px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .historial-lista {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .historial-lista li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .historial-lista li:last-child {
+    border-bottom: none;
+  }
+  
+  .historial-lista p {
+    margin: 5px 0;
+  }
+  
+  .historial-lista strong {
+    color: #b22222;
   }
   

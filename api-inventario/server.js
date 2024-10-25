@@ -15,8 +15,8 @@ const pool = mysql.createPool({
     password: 'Materiales123@',
     database: 'u475816193_Inventario',
     waitForConnections: true,
-    connectionLimit: 10,  // Define cuántas conexiones pueden ser creadas
-    queueLimit: 0         // Sin límite en la cola de peticiones
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 // Verificar la conexión inicial
@@ -26,7 +26,7 @@ pool.getConnection((err, connection) => {
         return;
     }
     console.log('Conexión exitosa a la base de datos');
-    connection.release(); // Liberar la conexión de nuevo al pool
+    connection.release();
 });
 
 // Middleware simulado para verificar token de administrador (en producción usarías JWT)
@@ -42,15 +42,13 @@ const verificarAdmin = (req, res, next) => {
 // Login del administrador
 app.post('/login', (req, res) => {
     const { usuario, contraseña } = req.body;
-
     const sql = 'SELECT * FROM Administrador WHERE Usuario = ?';
-    pool.query(sql, [usuario], (err, results) => { // Utilizando el pool para las consultas
+    pool.query(sql, [usuario], (err, results) => {
         if (err) {
             return res.status(500).json({ message: 'Error al consultar la base de datos' });
         }
         if (results.length > 0) {
             const storedPassword = results[0].contraseña;
-
             if (storedPassword === contraseña) {
                 const token = 'admin-token'; 
                 return res.json({ token, isAdmin: true });
@@ -66,7 +64,7 @@ app.post('/login', (req, res) => {
 // Obtener todos los productos (disponible para cualquier usuario)
 app.get('/Materiales', (req, res) => {
     const sql = 'SELECT * FROM Materiales';
-    pool.query(sql, (err, results) => { // Utilizando el pool para las consultas
+    pool.query(sql, (err, results) => {
         if (err) {
             console.error('Error al obtener materiales:', err);
             return res.status(500).json({ error: err.message });
@@ -75,27 +73,32 @@ app.get('/Materiales', (req, res) => {
     });
 });
 
-// Crear un producto (solo administrador)
+// Crear un producto (solo administrador) - SIN unidad
 app.post('/Materiales', verificarAdmin, (req, res) => {
-    const { nombre, unidad, metros_disponibles, precio, imagen_url } = req.body;
-
-    const sql = 'INSERT INTO Materiales (nombre, unidad, metros_disponibles, precio, imagen_url) VALUES (?, ?, ?, ?, ?)';
-    pool.query(sql, [nombre, unidad, metros_disponibles, precio, imagen_url], (err, results) => { // Utilizando el pool para las consultas
+    const { nombre, metros_disponibles, precio, imagen_url } = req.body;
+    const sql = 'INSERT INTO Materiales (nombre, metros_disponibles, precio, imagen_url) VALUES (?, ?, ?, ?)';
+    pool.query(sql, [nombre, metros_disponibles, precio, imagen_url], (err, results) => {
         if (err) {
             console.error('Error al insertar Materiales', err);
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: results.insertId, nombre, unidad, metros_disponibles, precio, imagen_url });
+        // Registrar el movimiento en la tabla de movimientos
+        const movimientoSql = `INSERT INTO MovimientosInventario (id_material, tipo_movimiento, cantidad, fecha_movimiento, descripcion) VALUES (?, "CREAR", ?, NOW(), ?)`;
+        pool.query(movimientoSql, [results.insertId, metros_disponibles, `Se creó el material ${nombre}`], (err) => {
+            if (err) {
+                console.error("Error al registrar movimiento", err);
+            }
+        });
+        res.status(201).json({ id: results.insertId, nombre, metros_disponibles, precio, imagen_url });
     });
 });
 
-// Actualizar un producto (solo administrador) - Usar id_material en lugar de id
+// Actualizar un producto (solo administrador) - SIN unidad
 app.put('/Materiales/:id_material', verificarAdmin, (req, res) => {
     const { id_material } = req.params; 
-    const { nombre, unidad, metros_disponibles, precio } = req.body;
-
-    const sql = 'UPDATE Materiales SET nombre = ?, unidad = ?, metros_disponibles = ?, precio = ? WHERE id_material = ?';
-    pool.query(sql, [nombre, unidad, metros_disponibles, precio, id_material], (err, results) => { // Utilizando el pool para las consultas
+    const { nombre, metros_disponibles, precio, imagen_url } = req.body;
+    const sql = 'UPDATE Materiales SET nombre = ?, metros_disponibles = ?, precio = ?, imagen_url = ? WHERE id_material = ?';
+    pool.query(sql, [nombre, metros_disponibles, precio, imagen_url, id_material], (err, results) => {
         if (err) {
             console.error("Error al actualizar", err);
             return res.status(500).json({ error: err.message });
@@ -103,24 +106,57 @@ app.put('/Materiales/:id_material', verificarAdmin, (req, res) => {
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: "Material no encontrado" });
         }
+
+        // Registrar el movimiento en la tabla de movimientos
+        const movimientoSql = `INSERT INTO MovimientosInventario (id_material, tipo_movimiento, cantidad, fecha_movimiento, descripcion) VALUES (?, "ACTUALIZAR", ?, NOW(), ?)`;
+        pool.query(movimientoSql, [id_material, metros_disponibles, `Se actualizó el material ${nombre}`], (err) => {
+            if (err) {
+                console.error("Error al registrar movimiento", err);
+            }
+        });
+
         res.json({ message: 'Material actualizado' });
     });
 });
 
-// Eliminar un producto (solo administrador) - Usar id_material en lugar de id
+// Eliminar un producto (solo administrador) - SIN unidad
 app.delete('/Materiales/:id_material', verificarAdmin, (req, res) => {
-    const { id_material } = req.params; 
+    const { id_material } = req.params;
 
-    const sql = 'DELETE FROM Materiales WHERE id_material = ?';
-    pool.query(sql, [id_material], (err, results) => { // Utilizando el pool para las consultas
+    // Primero eliminar los movimientos asociados al material
+    const deleteMovimientosSql = 'DELETE FROM MovimientosInventario WHERE id_material = ?';
+    pool.query(deleteMovimientosSql, [id_material], (err, results) => {
         if (err) {
-            console.error("Error al eliminar", err);
+            console.error("Error al eliminar movimientos", err);
+            return res.status(500).json({ error: 'Error al eliminar movimientos asociados' });
+        }
+
+        // Luego eliminar el material
+        const deleteMaterialSql = 'DELETE FROM Materiales WHERE id_material = ?';
+        pool.query(deleteMaterialSql, [id_material], (err, results) => {
+            if (err) {
+                console.error("Error al eliminar material", err);
+                return res.status(500).json({ error: 'Error al eliminar material' });
+            }
+            res.json({ message: 'Material y movimientos asociados eliminados' });
+        });
+    });
+});
+
+// Obtener el historial de movimientos (solo administrador)
+app.get('/historial', verificarAdmin, (req, res) => {
+    const sql = `
+        SELECT MovimientosInventario.*, Materiales.nombre 
+        FROM MovimientosInventario 
+        JOIN Materiales ON MovimientosInventario.id_material = Materiales.id_material 
+        ORDER BY fecha_movimiento DESC`;
+    
+    pool.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error al obtener el historial de movimientos:', err);
             return res.status(500).json({ error: err.message });
         }
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ error: "Material no encontrado" });
-        }
-        res.json({ message: 'Material eliminado' });
+        res.json(results); // Enviar los movimientos obtenidos al frontend
     });
 });
 
